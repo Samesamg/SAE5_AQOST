@@ -2,5 +2,5 @@
 ## Aquarium monitoring system using LoRaWAN protocol 
 
 ### Project structure : 
-+ AqOS : Embedded software for LorRaWAN end-nodes 
++ AqOS : Embedded software for LoRaWAN end-nodes 
 + Aq1_Guppy : Lorawan end node PCB (Altium designer format)
