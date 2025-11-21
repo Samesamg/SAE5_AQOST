@@ -7,7 +7,7 @@ Basic LoRa TX with Seeed E5 module - Based on STM32duinoLoRaWAN "LoRa send and r
 #include "STM32LoRaWAN.h"
 
 STM32LoRaWAN modem;
-HardwareSerial Serial1(PB7, PB6); //(RX, TX)
+HardwareSerial Serial1(PB7, PB6); //(RX, TX) et oui
 
 static const unsigned long TX_INTERVAL = 60000; // Interval between TX in ms
 unsigned long last_tx = 0;
