@@ -1,68 +1,84 @@
-/*
-AQOST - AqOS_0.1 - 20/11/2025
-Basic LoRa TX with Seeed E5 module - Based on STM32duinoLoRaWAN "LoRa send and receive" example
-*/
-
 #include <Arduino.h>
 #include "STM32LoRaWAN.h"
+#include "DS18B20.h"
 
 STM32LoRaWAN modem;
-HardwareSerial Serial1(PB7, PB6); //(RX, TX) et oui
+HardwareSerial Serial1(PB7, PB6); //(RX, TX)
+String msg;
 
-static const unsigned long TX_INTERVAL = 60000; // Interval between TX in ms
+OneWire oneWire(PB3);
+DS18B20 sensor(&oneWire);
+
+static const unsigned long TX_INTERVAL = 60000; /* ms */
 unsigned long last_tx = 0;
-bool connected = 0;
 
-void setup() 
-{
+void setup() {
+  
   pinMode(PB10, OUTPUT);
   pinMode(PA9, OUTPUT);
-  digitalWrite(PB10, HIGH);  //Enable 5V on dev board
-  digitalWrite(PA9, HIGH);  //Enable 3V3 on dev board
-
+  digitalWrite(PB10, HIGH); //enable 5V
+  digitalWrite(PA9, HIGH);  //enable 3V3
   Serial1.begin(115200);
   Serial1.println("Start");
+  modem.begin(EU868);
 
-  modem.begin(EU868);  //init SubGhz
-  connected = modem.joinOTAA("000000000000E5DD", "F04FB86BBD54BBE33392F77CBE59F806", "70B3D57ED0072EE0");  // (AppEui, Appkey, DevEui)  TODO : get device EUI from unique identifier uh
+  bool connected = modem.joinOTAA(/* AppEui */ "000000000000E5DD", /* AppKey */ "F04FB86BBD54BBE33392F77CBE59F806", /* DevEui */ "70B3D57ED0072EE0");
 
   if (connected) 
   {
-    Serial1.println("Joined");  //Connection established - PB5 turns on
-    pinMode(PB5, OUTPUT);
+    Serial1.println("Joined");
   } 
   else 
   {
-    Serial1.println("Join failed"); 
-    while (true) {};
+    Serial1.println("Join failed");
+    while (true) 
+    {
+    }
   }
-  
+
+  pinMode(PB5, OUTPUT);  
 }
 
-void send_packet() 
-{
+void send_packet(String message) {
+  const char * msg = message.c_str();
+  Serial1.println(message);
   char payload[27] = { 0 }; 
-  sprintf(payload,"Hello World !");  //Format data into payload buffer
+  sprintf(payload,msg);
 
-  modem.setPort(3);  //Set TX port
-  modem.beginPacket(); 
+  modem.setPort(3);
+  modem.beginPacket();
   modem.write(payload, strlen(payload));
-
-  if (modem.endPacket() == (int)strlen(payload)) 
-  {
+  if (modem.endPacket() == (int)strlen(payload)) {
     Serial1.println("Sent packet");
-  } 
-  else 
-  {
+  } else {
     Serial1.println("Failed to send packet");
   }
+
+  if (modem.available()) {
+    Serial1.print("Received packet on port ");
+    Serial1.print(modem.getDownlinkPort());
+    Serial1.print(":");
+    while (modem.available()) {
+      uint8_t b = modem.read();
+      Serial1.print(" ");
+      Serial1.print(b >> 4, HEX);
+      Serial1.print(b & 0xF, HEX);
+    }
+    Serial1.println();
+  }
 }
 
-void loop() 
-{
+void loop() {
+  //Serial1.println("entering loop");
+  
   if (!last_tx || millis() - last_tx > TX_INTERVAL) 
   {
-    send_packet();
-    last_tx = millis();
+  Serial1.println("Entrez message : ");
+  while (Serial1.available() == 0) { //available is like a mailbox
+  delay(10); 
+}
+  msg = Serial1.readStringUntil('\n');
+  send_packet(msg);
+  last_tx = millis();
   }
 }
