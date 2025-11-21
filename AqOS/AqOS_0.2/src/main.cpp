@@ -5,6 +5,7 @@ Basic LoRa TX with Seeed E5 module - Based on STM32duinoLoRaWAN "LoRa send and r
 
 #include <Arduino.h>
 #include "STM32LoRaWAN.h"
+#include "EEPROM.h"  //Emulate EEPROM with flash memory 
 
 STM32LoRaWAN modem;
 HardwareSerial Serial1(PB7, PB6); //(RX, TX)
@@ -19,23 +20,39 @@ void setup()
   pinMode(PA9, OUTPUT);
   digitalWrite(PB10, HIGH);  //Enable 5V on dev board
   digitalWrite(PA9, HIGH);  //Enable 3V3 on dev board
+  EEPROM.put(0, 24); //write to flash memory (address index, 8bit data)
+  int test=0;
+  EEPROM.get(0, test); //read flash memory (address index, 8bit data)
 
   Serial1.begin(115200);
   Serial1.println("Start");
 
-  modem.begin(EU868);  //init SubGhz
-  connected = modem.joinOTAA("000000000000E5DD", "F04FB86BBD54BBE33392F77CBE59F806", "70B3D57ED0072EE0");  // (AppEui, Appkey, DevEui)  TODO : get device EUI from unique identifier uh
 
-  if (connected) 
-  {
-    Serial1.println("Joined");  //Connection established - PB5 turns on
-    pinMode(PB5, OUTPUT);
-  } 
-  else 
-  {
-    Serial1.println("Join failed"); 
-    while (true) {};
-  }
+  Serial1.println(test);
+
+  modem.begin(EU868);  //init SubGhz
+
+ // String DevEUI = modem.deviceEUI(); //Device EUI baked in STM32 
+ // String AppKey = "A4E39A0DAF0B9A7FA10C8F2675F325E5";  //Application key provided by server
+ // String AppEUI = "000000000000E5DD";  //Application EUI provided by server
+ // Serial1.println("DevEUI : " + DevEUI);
+ // Serial1.println("AppEUI : " + AppEUI);   
+ // Serial1.println("AppKey : " + AppKey); 
+//
+//
+//connected = modem.joinOTAA(AppEUI, AppKey, DevEUI); 
+//
+//
+//if (connected) 
+//{
+//  Serial1.println("Joined");  //Connection established - PB5 turns on
+//  pinMode(PB5, OUTPUT);
+//} 
+//else 
+//{
+//  Serial1.println("Join failed"); 
+//  while (true) {};
+//}
   
 }
 
