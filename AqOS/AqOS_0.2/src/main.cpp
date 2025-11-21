@@ -24,7 +24,7 @@ void setup()
   Serial1.println("Start");
 
   modem.begin(EU868);  //init SubGhz
-  connected = modem.joinOTAA("000000000000E5DD", "F04FB86BBD54BBE33392F77CBE59F806", "70B3D57ED0072EE0");  // (AppEui, Appkey, DevEui)  TODO : get device EUI from unique identifier
+  connected = modem.joinOTAA("000000000000E5DD", "F04FB86BBD54BBE33392F77CBE59F806", "70B3D57ED0072EE0");  // (AppEui, Appkey, DevEui)  TODO : get device EUI from unique identifier uh
 
   if (connected) 
   {
