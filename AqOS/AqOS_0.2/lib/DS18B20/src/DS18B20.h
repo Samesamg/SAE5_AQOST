@@ -19,7 +19,7 @@
 //
 
 
-#include "D:\GEII\SAE5\LoraE5dev_tempSensor_test\.pio\libdeps\lora_e5_dev_board\OneWire\OneWire.h"
+#include "OneWire.h"
 
 
 #define DS18B20_LIB_VERSION     (F("0.2.4"))
