@@ -6,25 +6,28 @@ STM32LoRaWAN modem;
 HardwareSerial Serial1(PB7, PB6); //(RX, TX)
 String msg;
 
-OneWire oneWire(PB3);
+
+OneWire oneWire(PB5);
 DS18B20 sensor(&oneWire);
 
 static const unsigned long TX_INTERVAL = 60000; /* ms */
 unsigned long last_tx = 0;
 
+
+
 void setup() {
-  
+  pinMode(PC0, INPUT);
   pinMode(PB10, OUTPUT);
   pinMode(PA9, OUTPUT);
   digitalWrite(PB10, HIGH); //enable 5V
   digitalWrite(PA9, HIGH);  //enable 3V3
   Serial1.begin(115200);
   Serial1.println("Start");
-  modem.begin(EU868);
+//  modem.begin(EU868);
 
-  bool connected = modem.joinOTAA(/* AppEui */ "000000000000E5DD", /* AppKey */ "F04FB86BBD54BBE33392F77CBE59F806", /* DevEui */ "70B3D57ED0072EE0");
+//  bool connected = modem.joinOTAA(/* AppEui */ "000000000000EA29", /* AppKey */ "509E1667257F5594DFBC03AB67A89B43", /* DevEui */ "70B3D57ED00752BF");
 
-  if (connected) 
+/*  if (connected) 
   {
     Serial1.println("Joined");
   } 
@@ -35,8 +38,9 @@ void setup() {
     {
     }
   }
-
+*/
   pinMode(PB5, OUTPUT);  
+  sensor.setResolution(12);
 }
 
 void send_packet(String message) {
@@ -70,15 +74,13 @@ void send_packet(String message) {
 
 void loop() {
   //Serial1.println("entering loop");
-  
-  if (!last_tx || millis() - last_tx > TX_INTERVAL) 
+  if (digitalRead(PC0) == 0) 
   {
-  Serial1.println("Entrez message : ");
-  while (Serial1.available() == 0) { //available is like a mailbox
-  delay(10); 
-}
-  msg = Serial1.readStringUntil('\n');
-  send_packet(msg);
+  sensor.requestTemperatures();
+  String msg = String(sensor.getTempC());
+//  send_packet(msg);
+  Serial1.println(msg);
+  
   last_tx = millis();
   }
 }
