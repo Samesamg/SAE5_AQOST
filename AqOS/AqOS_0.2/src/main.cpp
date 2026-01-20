@@ -1,10 +1,12 @@
 #include <Arduino.h>
 #include "STM32LoRaWAN.h"
 #include "DS18B20.h"
+#include "serialRequest.hpp"
 
 STM32LoRaWAN modem;
 HardwareSerial Serial1(PB7, PB6); //(RX, TX)
 String msg;
+serialRequest setup_test;
 
 OneWire oneWire(PB3);
 DS18B20 sensor(&oneWire);
@@ -22,7 +24,7 @@ void setup() {
   Serial1.println("Start");
   modem.begin(EU868);
 
-  bool connected = modem.joinOTAA(/* AppEui */ "000000000000E5DD", /* AppKey */ "F04FB86BBD54BBE33392F77CBE59F806", /* DevEui */ "70B3D57ED0072EE0");
+  bool connected = modem.joinOTAA(/* AppEui */ "000000000000EA29", /* AppKey */ "509E1667257F5594DFBC03AB67A89B43", /* DevEui */ "70B3D57ED00752BF");
 
   if (connected) 
   {
@@ -34,7 +36,7 @@ void setup() {
     while (true) 
     {
     }
-  }
+  } 
 
   pinMode(PB5, OUTPUT);  
 }
@@ -78,6 +80,7 @@ void loop() {
   delay(10); 
 }
   msg = Serial1.readStringUntil('\n');
+  setup_test.setup(msg);
   send_packet(msg);
   last_tx = millis();
   }
