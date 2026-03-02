@@ -19,7 +19,7 @@ public:
     bool getWriteBufferIdx(uint8_t* data);
     bool writeToMemory(uint8_t* dataBuffer, Slots memorySlot);
     bool readFromMemory(uint8_t* dataBuffer, Slots memorySlot);
-    bool init();
+    bool begin();
 
 private:
     bool fifoGetNextAddress(bool writeRead, uint8_t* address); //0=write ; 1=read

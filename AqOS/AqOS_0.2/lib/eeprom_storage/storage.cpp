@@ -6,7 +6,7 @@ Storage::Storage(uint8_t eepromIoPin, uint8_t deviceAddress): _eeprom(eepromIoPi
     _readIdx=0;
 }
 
-bool Storage::init()
+bool Storage::begin()
 {
     bool DEVICE_PRESENT=0;
     DEVICE_PRESENT|=_eeprom.init();

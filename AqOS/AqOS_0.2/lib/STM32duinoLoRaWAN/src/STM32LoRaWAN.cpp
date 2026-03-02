@@ -863,29 +863,13 @@ bool STM32LoRaWAN::mibGetHex(const char *name, Mib_t type, String *value)
   return toHex(value, buf, size);
 }
 
-bool STM32LoRaWAN::mibSetBuffer(uint8_t *buf, Mib_t type, const char *value)
+bool STM32LoRaWAN::mibSetUint8Buffer(const char *name, Mib_t type, uint8_t *buf)  //added for AqOS
 {
-  // The buffer-passing API is a bit fragile, since the size of the
-  // buffer to be passed is implicit, and also not very well
-  // documented. So we need to derive the size here.
-  size_t size = mibHexSize(name, type);
-
-  if (!size) {
-    return false;
-  }
-
-  uint8_t buf[size];
-  if (!parseHex(buf, value, size)) {
-    return false;
-  }
 
   MibRequestConfirm_t mibReq;
   switch (type) {
     case MIB_DEV_EUI: mibReq.Param.DevEui = buf; break;
     case MIB_JOIN_EUI: mibReq.Param.JoinEui = buf; break;
-    // This assumes big endian, since that's the natural way to
-    // write down a a number in hex
-    case MIB_DEV_ADDR: mibReq.Param.DevAddr = makeUint32(buf[0], buf[1], buf[2], buf[3]); break;
     case MIB_APP_KEY: mibReq.Param.AppKey = buf; break;
     case MIB_NWK_KEY: mibReq.Param.NwkKey = buf; break;
 #if (defined( LORAMAC_VERSION ) && ( LORAMAC_VERSION == 0x01010100 ))

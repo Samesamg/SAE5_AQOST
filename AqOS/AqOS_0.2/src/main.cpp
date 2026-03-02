@@ -8,21 +8,29 @@ Basic LoRa TX with Seeed E5 module - Based on STM32duinoLoRaWAN "LoRa send and r
 #include "storage.hpp"
 #include "DS18B20.h"
 #include "STM32RTC.h"
+#include "STM32LowPower.h"
 
 
 STM32LoRaWAN modem;
+STM32RTC rtc;
 HardwareSerial Serial1(PB7, PB6); //(RX, TX)
-Storage storage(PC1,0x00); //PUT EEPROM IO PIN AND ADDRESS HERE
-DS18B20 temp_sensor(PB5);
+Storage storage(PC1,0x00); //(EEPROM IO PIN, ADDRESS)
+DS18B20 temp_sensor(PB5);  //(DS18B20 IO PIN)
 
-void processInit();
+void mainProcessInit();
+void mainProcess();
+bool sendPacket(bool packetType, uint8_t* payload);
+void debugInit();
+
 
 void setup() 
 {
   Serial1.begin(115200);
   Serial1.println("Start");
 
-  storage.init();
+  storage.begin();
+
+  LowPower.begin();
 
   uint8_t devEui[8];
   modem.getDevEui((uint64_t*)devEui); //Device EUI baked in STM32 (on startup)
@@ -32,46 +40,50 @@ void setup()
   uint8_t appKey[16] = {0xB2, 0x06, 0x9D, 0x52, 0xB8, 0xC9, 0x7F, 0x1E, 0xD3, 0x27, 0x7A, 0x12, 0x8F, 0xF1, 0x1A, 0xA7};//"F0EA82A2D56E0BFC2E5B6E664A1302B3"; //Application key provided by server
   storage.writeToMemory(appKey,Storage::Slots::APP_KEY);
 
-  uint8_t readBuffer[16];
-
-  modem.begin(EU868);  //init SubGhz
-
-  storage.readFromMemory(readBuffer, Storage::Slots::DEV_EUI);
-  modem.setDevEui((uint64_t)readBuffer);
-  storage.readFromMemory(readBuffer, Storage::Slots::APP_EUI);
-  modem.setAppEui((uint64_t)readBuffer);
-  storage.readFromMemory(readBuffer, Storage::Slots::APP_KEY);
-  modem.setAppKey()
-
-  processInit();
+  mainProcessInit();
 
 }
 
-void processInit() //init for main process (no debug)
+void mainProcessInit() //init for main process (no debug)
+{
+  modem.begin(EU868);  //init SubGhz
+  rtc.begin();
+
+  //rtc alarm to raise a flag when 15min / 24h have passed? 
+
+  uint8_t devEui[8];
+  storage.readFromMemory(devEui, Storage::Slots::DEV_EUI);
+  modem.setDevEui(devEui);
+  uint8_t AppEui[8];
+  storage.readFromMemory(AppEui, Storage::Slots::APP_EUI);
+  modem.setAppEui(AppEui);
+  uint8_t AppKey[16];
+  storage.readFromMemory(AppKey, Storage::Slots::APP_KEY);
+  modem.setAppKey(AppKey);
+
+  while (!modem.joinOTAA())
+  {
+    LowPower.deepSleep(10000);  //Join attempt each 10s
+  }
+
+}
+
+void mainProcess()
 {
 
-  bool connected=modem.joinOTAA();
-
-  if (connected) 
-  {
-    Serial1.println("Joined"); 
-  } 
-  else 
-  {
-    Serial1.println("Join failed"); 
-    while (true) {};
-  }
 }
 
 void debugInit()
 {
   Serial1.begin(115200);
-  Serial1.println("Start");
+  Serial1.println("Debug");
+
 }
 
-void sendPacket(bool packetType, uint8_t* payload) //packetType = 0 (Temp), packetType = 1 (Temp+Bat)
+bool sendPacket(bool packetType, uint8_t* payload) //packetType = 0 (Temp), packetType = 1 (Temp+Bat)
 {
   uint8_t payloadLength, txport;
+
   if(packetType) //temp+bat
   {
     payloadLength=4;
@@ -87,25 +99,11 @@ void sendPacket(bool packetType, uint8_t* payload) //packetType = 0 (Temp), pack
   modem.beginPacket(); 
   modem.write(payload, payloadLength);
 
-  if (modem.endPacket() == (int)payloadLength) 
-  {
-    Serial1.println("Sent packet");
-  }
-  else 
-  {
-    Serial1.println("Failed to send packet");
-  }
+  return (modem.endPacket() == (int)payloadLength); //packet sent
 }
 
 void loop() 
 {
-  /*
-  if (!last_tx || millis() - last_tx > TX_INTERVAL) 
-  {
-    uint8_t tempBuffer[2];
-    temp_sensor.getTempRaw(tempBuffer);
-    send_packet(0, tempBuffer);
-    last_tx = millis();
-  }
-  */
+  mainProcess();
+  LowPower.deepSleep(10000);
 }
