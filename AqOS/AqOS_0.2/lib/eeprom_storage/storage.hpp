@@ -11,9 +11,12 @@ public:
         DEV_EUI=0x00,  //DevEUI (8 bytes) slot starts at address 0x00 (0x00->0x07)(zone 0)
         APP_EUI=0x08,  //AppEUI (8 bytes) slot starts at address 0x08 (0x07->0x0F)(zone 0)
         APP_KEY=0x10,  //APPKEY (16 bytes) slot starts at address 0x10 (0x10->0x1F)(zone 0)
-        SINGLE_BYTE_DATA=0x20   //Other values (1 byte) slot starts at adress 0x20 (zone 1)
+        FIFO_IDX=0x20,  //FIFO index to read from it
+        TEMP_SENSOR_DATA=0x22   //Temp sensor values (2 bytes (12 bit)) slot starts at adress 0x20 (zone 1)
     };
     Storage(uint8_t eepromIoPin, uint8_t deviceAddress);
+    Storage(){};
+    bool getWriteBufferIdx(uint8_t* data);
     bool writeToMemory(uint8_t* dataBuffer, Slots memorySlot);
     bool readFromMemory(uint8_t* dataBuffer, Slots memorySlot);
     bool init();
@@ -24,6 +27,7 @@ private:
     uint8_t _writeIdx;
     uint8_t _readIdx;
     uint8_t _eepromIoPin;
+    bool _fifoOverflowed;
 };
 
 #endif

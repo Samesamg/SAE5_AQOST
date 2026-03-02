@@ -863,6 +863,69 @@ bool STM32LoRaWAN::mibGetHex(const char *name, Mib_t type, String *value)
   return toHex(value, buf, size);
 }
 
+bool STM32LoRaWAN::mibSetBuffer(uint8_t *buf, Mib_t type, const char *value)
+{
+  // The buffer-passing API is a bit fragile, since the size of the
+  // buffer to be passed is implicit, and also not very well
+  // documented. So we need to derive the size here.
+  size_t size = mibHexSize(name, type);
+
+  if (!size) {
+    return false;
+  }
+
+  uint8_t buf[size];
+  if (!parseHex(buf, value, size)) {
+    return false;
+  }
+
+  MibRequestConfirm_t mibReq;
+  switch (type) {
+    case MIB_DEV_EUI: mibReq.Param.DevEui = buf; break;
+    case MIB_JOIN_EUI: mibReq.Param.JoinEui = buf; break;
+    // This assumes big endian, since that's the natural way to
+    // write down a a number in hex
+    case MIB_DEV_ADDR: mibReq.Param.DevAddr = makeUint32(buf[0], buf[1], buf[2], buf[3]); break;
+    case MIB_APP_KEY: mibReq.Param.AppKey = buf; break;
+    case MIB_NWK_KEY: mibReq.Param.NwkKey = buf; break;
+#if (defined( LORAMAC_VERSION ) && ( LORAMAC_VERSION == 0x01010100 ))
+    case MIB_J_S_INT_KEY: mibReq.Param.JSIntKey = buf; break;
+    case MIB_J_S_ENC_KEY: mibReq.Param.JSEncKey = buf; break;
+    case MIB_F_NWK_S_INT_KEY: mibReq.Param.FNwkSIntKey = buf; break;
+    case MIB_S_NWK_S_INT_KEY: mibReq.Param.SNwkSIntKey = buf; break;
+    case MIB_NWK_S_ENC_KEY: mibReq.Param.NwkSEncKey = buf; break;
+#else /* ( LORAMAC_VERSION == 0x01010100 ) */
+    case MIB_NWK_S_KEY: mibReq.Param.NwkSKey = buf; break;
+#endif /* ( LORAMAC_VERSION == 0x01010100 ) */
+    case MIB_APP_S_KEY: mibReq.Param.AppSKey = buf; break;
+    case MIB_MC_KE_KEY: mibReq.Param.McKEKey = buf; break;
+#if ( LORAMAC_MAX_MC_CTX > 0 )
+    case MIB_MC_KEY_0: mibReq.Param.McKey0 = buf; break;
+    case MIB_MC_APP_S_KEY_0: mibReq.Param.McAppSKey0 = buf; break;
+    case MIB_MC_NWK_S_KEY_0: mibReq.Param.McNwkSKey0 = buf; break;
+#endif /* LORAMAC_MAX_MC_CTX > 0 */
+#if ( LORAMAC_MAX_MC_CTX > 1 )
+    case MIB_MC_KEY_1: mibReq.Param.McKey1 = buf; break;
+    case MIB_MC_APP_S_KEY_1: mibReq.Param.McAppSKey1 = buf; break;
+    case MIB_MC_NWK_S_KEY_1: mibReq.Param.McNwkSKey1 = buf; break;
+#endif /* LORAMAC_MAX_MC_CTX > 1 */
+#if ( LORAMAC_MAX_MC_CTX > 2 )
+    case MIB_MC_KEY_2: mibReq.Param.McKey2 = buf; break;
+    case MIB_MC_APP_S_KEY_2: mibReq.Param.McAppSKey2 = buf; break;
+    case MIB_MC_NWK_S_KEY_2: mibReq.Param.McNwkSKey2 = buf; break;
+#endif /* LORAMAC_MAX_MC_CTX > 2 */
+#if ( LORAMAC_MAX_MC_CTX > 3 )
+    case MIB_MC_KEY_3: mibReq.Param.McKey3 = buf; break;
+    case MIB_MC_APP_S_KEY_3: mibReq.Param.McAppSKey3 = buf; break;
+    case MIB_MC_NWK_S_KEY_3: mibReq.Param.McNwkSKey3 = buf; break;
+#endif /* LORAMAC_MAX_MC_CTX > 3 */
+    default:
+      return failure("Internal error: Unknown MIB type: %s / %u\r\n", name, type);
+  }
+
+  return mibSet(name, type, mibReq);
+}
+
 bool STM32LoRaWAN::mibSetHex(const char *name, Mib_t type, const char *value)
 {
   // The buffer-passing API is a bit fragile, since the size of the
