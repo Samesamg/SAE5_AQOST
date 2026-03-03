@@ -382,7 +382,8 @@ class STM32LoRaWAN : public Stream {
 
     }
     bool setAppKey(String value) { return setAppKey(value.c_str()); }
-    bool setAppKey(uint8_t* value) {return mibSetUint8Buffer("AppKey",MIB_APP_KEY,value);}  //Added for AqOS
+    bool setAppKey(uint8_t* value) {return mibSetUint8Buffer("AppKey",MIB_APP_KEY,value)
+                                    && (this->nwk_key_set || mibSetUint8Buffer("NwkKey", MIB_NWK_KEY, value));}  //Added for AqOS
     bool setNwkKey(const char *value)
     {
       this->nwk_key_set = true;

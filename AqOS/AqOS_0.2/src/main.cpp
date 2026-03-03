@@ -10,9 +10,8 @@ Basic LoRa TX with Seeed E5 module - Based on STM32duinoLoRaWAN "LoRa send and r
 #include "STM32RTC.h"
 #include "STM32LowPower.h"
 
-
 STM32LoRaWAN modem;
-STM32RTC rtc;
+STM32RTC& rtc = STM32RTC::getInstance();
 HardwareSerial Serial1(PB7, PB6); //(RX, TX)
 Storage storage(PC1,0x00); //(EEPROM IO PIN, ADDRESS)
 DS18B20 temp_sensor(PB5);  //(DS18B20 IO PIN)
@@ -22,18 +21,31 @@ void mainProcess();
 bool sendPacket(bool packetType, uint8_t* payload);
 void debugInit();
 
+void alarmMatchTemp(void* data);
+void alarmMatchBatTemp(void* data);
+
+uint32_t batTempPeriod = 86400;
+
+bool tempSendFlag=0;
+bool batTempSendFlag=0;
+bool alarmFlag=0;
+
+bool ledState=1;
 
 void setup() 
 {
   Serial1.begin(115200);
   Serial1.println("Start");
 
+  pinMode(PB15, OUTPUT);
+  digitalWrite(PB15, 0);
+
   storage.begin();
 
   LowPower.begin();
 
-  uint8_t devEui[8];
-  modem.getDevEui((uint64_t*)devEui); //Device EUI baked in STM32 (on startup)
+  uint8_t devEui[8] = {0x00, 0x80, 0xE1, 0x15, 0x05, 0x46, 0xF8, 0xB7};;
+  //modem.getDevEui((uint64_t*)devEui); //Device EUI baked in STM32 (on startup)
   storage.writeToMemory(devEui,Storage::Slots::DEV_EUI);
   uint8_t appEui[8] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xE6, 0x29};
   storage.writeToMemory(appEui,Storage::Slots::APP_EUI);
@@ -48,8 +60,22 @@ void mainProcessInit() //init for main process (no debug)
 {
   modem.begin(EU868);  //init SubGhz
   rtc.begin();
+  Serial.println(rtc.getClockSource());
+  rtc.setY2kEpoch(0);
+
+  //rtc.attachInterrupt(alarmMatchTemp, STM32RTC::ALARM_A);
+  //rtc.setAlarmEpoch(rtc.getEpoch() + 2, STM32RTC::MATCH_SS, STM32RTC::ALARM_A);
+
+
+  rtc.attachInterrupt(alarmMatchBatTemp, STM32RTC::ALARM_B);
+  rtc.setAlarmEpoch(rtc.getEpoch() + 2, STM32RTC::MATCH_SS, STM32RTC::ALARM_B);
+
+  //rtc.attachInterrupt(alarmMatchBatTemp, STM32RTC::ALARM_B);
+  //rtc.setAlarmSeconds(20, STM32RTC::ALARM_B);
+  //rtc.enableAlarm(rtc.MATCH_SS, STM32RTC::ALARM_B);
 
   //rtc alarm to raise a flag when 15min / 24h have passed? 
+  /*
 
   uint8_t devEui[8];
   storage.readFromMemory(devEui, Storage::Slots::DEV_EUI);
@@ -61,15 +87,34 @@ void mainProcessInit() //init for main process (no debug)
   storage.readFromMemory(AppKey, Storage::Slots::APP_KEY);
   modem.setAppKey(AppKey);
 
-  while (!modem.joinOTAA())
+  bool connected=0;
+
+  while (!connected)
   {
+    connected=modem.joinOTAA();
     LowPower.deepSleep(10000);  //Join attempt each 10s
   }
+  */
 
 }
 
 void mainProcess()
 {
+  if(batTempSendFlag)
+  {
+    //Serial.println("batSendFlag");
+    batTempSendFlag=0;
+    tempSendFlag=0;
+  }
+  if(tempSendFlag)
+  {
+    //Serial.println("tempSendFlag");
+    tempSendFlag=0;
+  }
+  if(alarmFlag)
+  {
+    alarmFlag=0;
+  }
 
 }
 
@@ -106,4 +151,16 @@ void loop()
 {
   mainProcess();
   LowPower.deepSleep(10000);
+}
+
+void alarmMatchTemp(void* data) 
+{
+  Serial.println("tempSendFlag");
+  tempSendFlag=1;
+}
+
+void alarmMatchBatTemp(void* data) 
+{
+  Serial.println("batSendFlag");
+  batTempSendFlag=1;
 }
