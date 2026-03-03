@@ -14,6 +14,7 @@ public:
         SINGLE_BYTE_DATA=0x20   //Other values (1 byte) slot starts at adress 0x20 (zone 1)
     };
     Storage(uint8_t eepromIoPin, uint8_t deviceAddress);
+    Storage(){};
     bool writeToMemory(uint8_t* dataBuffer, Slots memorySlot);
     bool readFromMemory(uint8_t* dataBuffer, Slots memorySlot);
     bool init();

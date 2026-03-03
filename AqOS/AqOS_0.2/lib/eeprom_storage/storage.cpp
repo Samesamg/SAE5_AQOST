@@ -55,6 +55,7 @@ bool Storage::readFromMemory(uint8_t* dataBuffer, Slots memorySlot)
         case Storage::Slots::APP_KEY : 
             FAULT|=_eeprom.readMemory(dataBuffer, memorySlot, 0x08);  //first 8 Bytes
             FAULT|=_eeprom.readMemory(&dataBuffer[8], memorySlot+0x08, 0x08);  //last 8 Bytes
+            
             break;
         
         case Storage::Slots::SINGLE_BYTE_DATA : 
