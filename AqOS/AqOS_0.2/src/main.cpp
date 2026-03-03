@@ -3,6 +3,9 @@ AQOST - AqOS_0.1 - 20/11/2025
 Basic LoRa TX with Seeed E5 module - Based on STM32duinoLoRaWAN "LoRa send and receive" example
 */
 
+#define TEMPBATSEND_TIMEOUT 20  //86400s = 24h
+#define TEMPSEND_TIMEOUT 10  //60s*15 = 15min
+
 #include <Arduino.h>
 #include "STM32LoRaWAN.h"
 #include "storage.hpp"
@@ -19,18 +22,14 @@ DS18B20 temp_sensor(PB5);  //(DS18B20 IO PIN)
 void mainProcessInit();
 void mainProcess();
 bool sendPacket(bool packetType, uint8_t* payload);
-void debugInit();
 
-void alarmMatchTemp(void* data);
-void alarmMatchBatTemp(void* data);
-
-uint32_t batTempPeriod = 86400;
+void rtcAlarmCallbackA(void* data);
+void rtcAlarmCallbackB(void* data);
 
 bool tempSendFlag=0;
 bool batTempSendFlag=0;
-bool alarmFlag=0;
 
-bool ledState=1;
+bool ledState=0;
 
 void setup() 
 {
@@ -38,11 +37,9 @@ void setup()
   Serial1.println("Start");
 
   pinMode(PB15, OUTPUT);
-  digitalWrite(PB15, 0);
+  digitalWrite(PB15, 1);
 
   storage.begin();
-
-  LowPower.begin();
 
   uint8_t devEui[8] = {0x00, 0x80, 0xE1, 0x15, 0x05, 0x46, 0xF8, 0xB7};;
   //modem.getDevEui((uint64_t*)devEui); //Device EUI baked in STM32 (on startup)
@@ -60,23 +57,8 @@ void mainProcessInit() //init for main process (no debug)
 {
   modem.begin(EU868);  //init SubGhz
   rtc.begin();
-  Serial.println(rtc.getClockSource());
-  rtc.setY2kEpoch(0);
-
-  //rtc.attachInterrupt(alarmMatchTemp, STM32RTC::ALARM_A);
-  //rtc.setAlarmEpoch(rtc.getEpoch() + 2, STM32RTC::MATCH_SS, STM32RTC::ALARM_A);
-
-
-  rtc.attachInterrupt(alarmMatchBatTemp, STM32RTC::ALARM_B);
-  rtc.setAlarmEpoch(rtc.getEpoch() + 2, STM32RTC::MATCH_SS, STM32RTC::ALARM_B);
-
-  //rtc.attachInterrupt(alarmMatchBatTemp, STM32RTC::ALARM_B);
-  //rtc.setAlarmSeconds(20, STM32RTC::ALARM_B);
-  //rtc.enableAlarm(rtc.MATCH_SS, STM32RTC::ALARM_B);
-
-  //rtc alarm to raise a flag when 15min / 24h have passed? 
-  /*
-
+  LowPower.begin();
+  
   uint8_t devEui[8];
   storage.readFromMemory(devEui, Storage::Slots::DEV_EUI);
   modem.setDevEui(devEui);
@@ -88,40 +70,49 @@ void mainProcessInit() //init for main process (no debug)
   modem.setAppKey(AppKey);
 
   bool connected=0;
+  connected=modem.joinOTAA();
 
   while (!connected)
   {
     connected=modem.joinOTAA();
     LowPower.deepSleep(10000);  //Join attempt each 10s
   }
-  */
 
+  rtc.attachInterrupt(rtcAlarmCallbackA, STM32RTC::ALARM_A);
+  rtc.setAlarmEpoch(rtc.getEpoch() + TEMPSEND_TIMEOUT, STM32RTC::MATCH_SS, STM32RTC::ALARM_A);
+
+  rtc.attachInterrupt(rtcAlarmCallbackB, STM32RTC::ALARM_B);
+  rtc.setAlarmEpoch(rtc.getEpoch() + TEMPBATSEND_TIMEOUT, STM32RTC::MATCH_SS, STM32RTC::ALARM_B);
+  
+
+}
+
+void loop() 
+{
+  mainProcess();
+  LowPower.deepSleep(1000);
 }
 
 void mainProcess()
 {
   if(batTempSendFlag)
   {
-    //Serial.println("batSendFlag");
+    uint8_t data[4];
+    temp_sensor.getTempRaw(data);
+    //TODO : analog read bat
+    sendPacket(1,data);
     batTempSendFlag=0;
-    tempSendFlag=0;
   }
-  if(tempSendFlag)
+  else if(tempSendFlag)
   {
-    //Serial.println("tempSendFlag");
+    uint8_t data[2];
+    temp_sensor.getTempRaw(data);
+    sendPacket(0,data);
     tempSendFlag=0;
+    digitalWrite(PB15, ledState);
+    ledState=!ledState;
   }
-  if(alarmFlag)
-  {
-    alarmFlag=0;
-  }
-
-}
-
-void debugInit()
-{
-  Serial1.begin(115200);
-  Serial1.println("Debug");
+  //TODO : check if temp alarms
 
 }
 
@@ -147,20 +138,17 @@ bool sendPacket(bool packetType, uint8_t* payload) //packetType = 0 (Temp), pack
   return (modem.endPacket() == (int)payloadLength); //packet sent
 }
 
-void loop() 
+void rtcAlarmCallbackA(void* data) //Alarm A callback => raise temperature send flag
 {
-  mainProcess();
-  LowPower.deepSleep(10000);
-}
-
-void alarmMatchTemp(void* data) 
-{
-  Serial.println("tempSendFlag");
   tempSendFlag=1;
+
+  rtc.setAlarmEpoch(rtc.getEpoch() + TEMPSEND_TIMEOUT, STM32RTC::MATCH_SS, STM32RTC::ALARM_A);
 }
 
-void alarmMatchBatTemp(void* data) 
+void rtcAlarmCallbackB(void* data) //Alarm B callback => raise temperature + battery send flag
 {
-  Serial.println("batSendFlag");
   batTempSendFlag=1;
+
+  rtc.setAlarmEpoch(rtc.getEpoch() + TEMPBATSEND_TIMEOUT, STM32RTC::MATCH_SS, STM32RTC::ALARM_B);
 }
+
