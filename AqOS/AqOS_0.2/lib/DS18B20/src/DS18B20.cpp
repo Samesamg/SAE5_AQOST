@@ -80,8 +80,8 @@ void DS18B20::getTempRaw(uint8_t* tempBuffer) //raw temp from ds18b20  [SSSSSDDD
             break;
     }
 
-    tempBuffer[0] = lsb;
-    tempBuffer[1] = msb;
+    tempBuffer[0] = msb;
+    tempBuffer[1] = lsb;
 }
 
 float DS18B20::getTempC() {

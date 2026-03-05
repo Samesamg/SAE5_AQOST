@@ -7,16 +7,12 @@
 #define EEPROM_READ 0x01
 #define EEPROM_WRITE 0x00
 
-//constructor
-OneWireEeprom::OneWireEeprom(uint8_t eepromIoPin, uint8_t deviceAddress)
-{
+//public methods
+bool OneWireEeprom::init(uint8_t eepromIoPin, uint8_t deviceAddress)
+{ 
     _eepromIoPin=eepromIoPin;
     _deviceAddress=(deviceAddress<<1)&0x0E; //device address on 3 bits [3;1], bit 0 is the read/write bit 
-}
 
-//public methods
-bool OneWireEeprom::init()
-{ 
     noInterrupts();
     sdioInit();
     //RESET SEQUENCE

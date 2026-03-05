@@ -11,22 +11,31 @@ public:
         DEV_EUI=0x00,  //DevEUI (8 bytes) slot starts at address 0x00 (0x00->0x07)(zone 0)
         APP_EUI=0x08,  //AppEUI (8 bytes) slot starts at address 0x08 (0x07->0x0F)(zone 0)
         APP_KEY=0x10,  //APPKEY (16 bytes) slot starts at address 0x10 (0x10->0x1F)(zone 0)
-        FIFO_IDX=0x20,  //FIFO index to read from it
-        TEMP_SENSOR_DATA=0x22   //Temp sensor values (2 bytes (12 bit)) slot starts at adress 0x20 (zone 1)
+        TEMP_ALARM_LOW=0x20,  //Low alarm threshold (1 byte)
+        TEMP_ALARM_HIGH=0x21,   //High alarm threshold (1 byte)
+        FIFO_IDX=0x22, //FIFO index (1 byte)
+        TEMP_SENSOR_DATA=0x23   //Temp sensor values (2 bytes (12 bit)) slot starts at address 0x23 (zone 1)
     };
-    Storage(uint8_t eepromIoPin, uint8_t deviceAddress);
-    Storage(){};
+    Storage();
     bool getWriteBufferIdx(uint8_t* data);
     bool writeToMemory(uint8_t* dataBuffer, Slots memorySlot);
     bool readFromMemory(uint8_t* dataBuffer, Slots memorySlot);
-    bool begin();
+    void setAddress(uint8_t address);
+    void setIoPin(uint8_t address);
+    static Storage &getInstance() //allows to call a single instance from any object
+    {
+      static Storage instance; 
+      return instance;
+    }
+    bool init();
 
 private:
     bool fifoGetNextAddress(bool writeRead, uint8_t* address); //0=write ; 1=read
     OneWireEeprom _eeprom;
     uint8_t _writeIdx;
     uint8_t _readIdx;
-    uint8_t _eepromIoPin;
+    uint8_t _eepromIoPin, _deviceAddress;
+
     bool _fifoOverflowed;
 };
 

@@ -103,7 +103,7 @@ In order to update the end-device identity (`DevEUI`, `JoinEUI` and `AES128 keys
 #### lr1110-se
 
 *lr1110-se* abstraction implementation handles all the required exchanges with the LR1110 radio crypto-engine.
-
+ 
 All LR1110 radio chips are pre-provisioned out of factory in order to be used with [LoRa Cloud Device Join Service](https://www.loracloud.com/documentation/join_service).  
 
 In case other Join Servers are to be used the `DevEUI`, `Pin`, `JoinEUI` and `AES128 keys` can be updated by following the instructions provided on chapter "13. LR1110 Provisioning" of the [LR1110 User Manual](https://semtech.my.salesforce.com/sfc/p/#E0000000JelG/a/2R000000Q2PM/KGm1YHDoHhtaicNYHCIAnh0CbG3yodEuWWJ2WrFRafM).

@@ -6,9 +6,8 @@
 class OneWireEeprom
 {
 public: 
-    OneWireEeprom(uint8_t eepromIoPin, uint8_t deviceAddress);
     OneWireEeprom(){};
-    bool init();
+    bool init(uint8_t eepromIoPin, uint8_t deviceAddress);
     bool readManufacturerId(uint8_t* dataBuffer);
     bool readMemory(uint8_t* dataBuffer, uint8_t address, uint8_t length);
     bool writeMemory(uint8_t* dataBuffer, uint8_t address, uint8_t length);

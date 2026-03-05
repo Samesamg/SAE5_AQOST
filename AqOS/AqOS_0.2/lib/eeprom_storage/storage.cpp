@@ -1,16 +1,26 @@
 #include "storage.hpp"
 
-Storage::Storage(uint8_t eepromIoPin, uint8_t deviceAddress): _eeprom(eepromIoPin, deviceAddress)
+Storage::Storage(): _eeprom()
 {
     _writeIdx=0;
     _readIdx=0;
 }
 
-bool Storage::begin()
+bool Storage::init()
 {
     bool DEVICE_PRESENT=0;
-    DEVICE_PRESENT|=_eeprom.init();
+    DEVICE_PRESENT|=_eeprom.init(_eepromIoPin, _deviceAddress);;
     return DEVICE_PRESENT;
+}
+
+void Storage::setIoPin(uint8_t ioPin)
+{
+    _eepromIoPin=ioPin;
+}
+
+void Storage::setAddress(uint8_t address)
+{
+    _deviceAddress=address;
 }
 
 bool Storage::writeToMemory(uint8_t* dataBuffer, Slots memorySlot)
@@ -28,6 +38,14 @@ bool Storage::writeToMemory(uint8_t* dataBuffer, Slots memorySlot)
             FAULT|=_eeprom.writeMemory(&dataBuffer[8], memorySlot+0x08, 0x08);  //last 8 Bytes
             break;
         
+        case Storage::Slots::TEMP_ALARM_LOW :
+            FAULT|=_eeprom.writeMemory(dataBuffer, memorySlot, 1);
+            break;
+        
+        case Storage::Slots::TEMP_ALARM_HIGH :
+            FAULT|=_eeprom.writeMemory(dataBuffer, memorySlot, 1);
+            break;    
+    
         case Storage::Slots::TEMP_SENSOR_DATA : 
             uint8_t address; 
             fifoGetNextAddress(0, &address);
@@ -56,8 +74,12 @@ bool Storage::readFromMemory(uint8_t* dataBuffer, Slots memorySlot)
             FAULT|=_eeprom.readMemory(&dataBuffer[8], memorySlot+0x08, 8);  //last 8 Bytes
             break;
 
-        case Storage::Slots::FIFO_IDX : 
-            FAULT|=_eeprom.readMemory(&_writeIdx, memorySlot, 2);
+        case Storage::Slots::TEMP_ALARM_LOW :
+            FAULT|=_eeprom.readMemory(dataBuffer, memorySlot, 1);
+            break;
+
+        case Storage::Slots::TEMP_ALARM_HIGH :
+            FAULT|=_eeprom.readMemory(dataBuffer, memorySlot, 1);
             break;
         
         case Storage::Slots::TEMP_SENSOR_DATA : 

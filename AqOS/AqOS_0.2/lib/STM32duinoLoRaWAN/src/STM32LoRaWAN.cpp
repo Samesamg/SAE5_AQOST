@@ -1326,6 +1326,7 @@ int STM32LoRaWAN::endPacket(bool confirmed)
   if (confirmed && !lastAck()) {
     return -1;
   }
+  
 
   return res;
 }
