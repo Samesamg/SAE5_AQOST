@@ -5,12 +5,14 @@ bool Endnode::ledState;
 //RTC alarm A used by lowPower (to wakeup from deepSleep)
 //RTC alarm B used by STM32LoraWan (for timeouts)
 
-Endnode::Endnode(HardwareSerial &Serial1) : _modem(), _tempSensor(TEMP_SENSOR_PIN)
+Endnode::Endnode() : _modem(), _tempSensor(TEMP_SENSOR_PIN)
 {}
 
 bool Endnode::init()
 {
+    LowPower.begin();
     _modem.begin(EU868); // init SubGhz modem + rtc
+
     pinMode(LED_PIN, OUTPUT);
     analogReadResolution(12);
 
@@ -20,10 +22,10 @@ bool Endnode::init()
 
     updateTempAlarms();
     updateLoraInfos();
-
+    
     STM32RTC::getInstance().attachInterrupt(blinkAlarmCallback, STM32RTC::ALARM_A); //led blink start
     STM32RTC::getInstance().setAlarmEpoch(STM32RTC::getInstance().getEpoch() + 1, STM32RTC::MATCH_SS, STM32RTC::ALARM_A);
-
+    
     bool connected = _modem.joinOTAA();
     if (connected)
     {
@@ -42,8 +44,9 @@ bool Endnode::init()
         STM32RTC::getInstance().detachInterrupt(STM32RTC::ALARM_A);
         digitalWrite(LED_PIN,1);
     }
+    
 
-    return (connected);
+    return (!connected);
 }
 
 void Endnode::process()
@@ -53,7 +56,6 @@ void Endnode::process()
         uint8_t data[2];
         _tempSensor.getTempRaw(data);
         sendPacket(ALARM_PACKET, data);
-        Serial1.println("AlarmSend");
     }
 
     else if (STM32RTC::getInstance().getEpoch() >= (_prevSendEpoch + SEND_TIMEOUT))  //if current time > prev time + timeout (NO CHOICE BC ALL RTC ALARMS ARE USED)
@@ -67,7 +69,6 @@ void Endnode::process()
             uint16_t batAdcValue = analogRead(BAT_ADC_PIN);
             data[2] = (batAdcValue >> 8) & 0xFF; // batAdcValue msb
             data[3] = batAdcValue & 0xFF;        // batAdcValue lsb
-            Serial1.println("batTempSend");
             sendPacket(TEMP_BAT_PACKET, data);
             _txCounter=0;
         }
@@ -75,21 +76,21 @@ void Endnode::process()
         {
             uint8_t data[2];
             _tempSensor.getTempRaw(data);
-            Serial1.println("TempSend");
             sendPacket(TEMP_PACKET, data);
             _txCounter++;
         }
     }
+    enterDeepSleep();
 }
 
 void Endnode::updateTempAlarms()
 {
     uint8_t Alarm;
-    if (Storage::getInstance().readFromMemory(&Alarm, Storage::Slots::TEMP_ALARM_HIGH))
+    if (!Storage::getInstance().readFromMemory(&Alarm, Storage::Slots::TEMP_ALARM_HIGH))  //No read Fault
     {
         _tempSensor.setAlarmHigh((int8_t)Alarm);
     }
-    if (Storage::getInstance().readFromMemory(&Alarm, Storage::Slots::TEMP_ALARM_LOW))    
+    if (!Storage::getInstance().readFromMemory(&Alarm, Storage::Slots::TEMP_ALARM_LOW))    //No read Fault
     {
         _tempSensor.setAlarmLow((int8_t)Alarm);
     }
@@ -143,6 +144,55 @@ bool Endnode::sendPacket(uint8_t packetType, uint8_t *payload)
     return (_modem.endPacket() == (int)payloadLength); // packet sent
 }
 
+void Endnode::enterDeepSleep()  //Enter deepSleep for WAKEUP_TIMEOUT amount of time
+{
+    //Put Gpios to analog mode with no pull up/down
+    LL_GPIO_SetPinMode((GPIO_TypeDef *)GPIOA_BASE, STM_LL_GPIO_PIN(PA0), LL_GPIO_MODE_ANALOG);
+    LL_GPIO_SetPinMode((GPIO_TypeDef *)GPIOA_BASE, STM_LL_GPIO_PIN(PA2), LL_GPIO_MODE_ANALOG);
+    LL_GPIO_SetPinMode((GPIO_TypeDef *)GPIOA_BASE, STM_LL_GPIO_PIN(PA3), LL_GPIO_MODE_ANALOG);
+    LL_GPIO_SetPinMode((GPIO_TypeDef *)GPIOA_BASE, STM_LL_GPIO_PIN(PA9), LL_GPIO_MODE_ANALOG);
+    LL_GPIO_SetPinMode((GPIO_TypeDef *)GPIOA_BASE, STM_LL_GPIO_PIN(PA10), LL_GPIO_MODE_ANALOG);
+    LL_GPIO_SetPinMode((GPIO_TypeDef *)GPIOA_BASE, STM_LL_GPIO_PIN(PA13), LL_GPIO_MODE_ANALOG);
+    LL_GPIO_SetPinMode((GPIO_TypeDef *)GPIOA_BASE, STM_LL_GPIO_PIN(PA14), LL_GPIO_MODE_ANALOG);
+
+    LL_GPIO_SetPinPull((GPIO_TypeDef *)GPIOA_BASE, STM_LL_GPIO_PIN(PA0), LL_GPIO_PULL_NO);
+    LL_GPIO_SetPinPull((GPIO_TypeDef *)GPIOA_BASE, STM_LL_GPIO_PIN(PA2), LL_GPIO_PULL_NO);
+    LL_GPIO_SetPinPull((GPIO_TypeDef *)GPIOA_BASE, STM_LL_GPIO_PIN(PA3), LL_GPIO_PULL_NO);
+    LL_GPIO_SetPinPull((GPIO_TypeDef *)GPIOA_BASE, STM_LL_GPIO_PIN(PA9), LL_GPIO_PULL_NO);
+    LL_GPIO_SetPinPull((GPIO_TypeDef *)GPIOA_BASE, STM_LL_GPIO_PIN(PA10), LL_GPIO_PULL_NO);
+    LL_GPIO_SetPinPull((GPIO_TypeDef *)GPIOA_BASE, STM_LL_GPIO_PIN(PA13), LL_GPIO_PULL_NO);
+    LL_GPIO_SetPinPull((GPIO_TypeDef *)GPIOA_BASE, STM_LL_GPIO_PIN(PA14), LL_GPIO_PULL_NO);
+    
+    LL_GPIO_SetPinMode((GPIO_TypeDef *)GPIOB_BASE, STM_LL_GPIO_PIN(PB0), LL_GPIO_MODE_ANALOG);
+    LL_GPIO_SetPinMode((GPIO_TypeDef *)GPIOB_BASE, STM_LL_GPIO_PIN(PB3), LL_GPIO_MODE_ANALOG);
+    LL_GPIO_SetPinMode((GPIO_TypeDef *)GPIOB_BASE, STM_LL_GPIO_PIN(PB4), LL_GPIO_MODE_ANALOG);
+    LL_GPIO_SetPinMode((GPIO_TypeDef *)GPIOB_BASE, STM_LL_GPIO_PIN(PB5), LL_GPIO_MODE_ANALOG);
+    LL_GPIO_SetPinMode((GPIO_TypeDef *)GPIOB_BASE, STM_LL_GPIO_PIN(PB6), LL_GPIO_MODE_ANALOG);
+    LL_GPIO_SetPinMode((GPIO_TypeDef *)GPIOB_BASE, STM_LL_GPIO_PIN(PB7), LL_GPIO_MODE_ANALOG);
+    LL_GPIO_SetPinMode((GPIO_TypeDef *)GPIOB_BASE, STM_LL_GPIO_PIN(PB9), LL_GPIO_MODE_ANALOG);
+    LL_GPIO_SetPinMode((GPIO_TypeDef *)GPIOB_BASE, STM_LL_GPIO_PIN(PB10), LL_GPIO_MODE_ANALOG);
+    LL_GPIO_SetPinMode((GPIO_TypeDef *)GPIOB_BASE, STM_LL_GPIO_PIN(PB13), LL_GPIO_MODE_ANALOG);
+    LL_GPIO_SetPinMode((GPIO_TypeDef *)GPIOB_BASE, STM_LL_GPIO_PIN(PB14), LL_GPIO_MODE_ANALOG);
+
+    LL_GPIO_SetPinPull((GPIO_TypeDef *)GPIOB_BASE, STM_LL_GPIO_PIN(PB0), LL_GPIO_PULL_NO);
+    LL_GPIO_SetPinPull((GPIO_TypeDef *)GPIOB_BASE, STM_LL_GPIO_PIN(PB3), LL_GPIO_PULL_NO);
+    LL_GPIO_SetPinPull((GPIO_TypeDef *)GPIOB_BASE, STM_LL_GPIO_PIN(PB4), LL_GPIO_PULL_NO);
+    LL_GPIO_SetPinPull((GPIO_TypeDef *)GPIOB_BASE, STM_LL_GPIO_PIN(PB5), LL_GPIO_PULL_NO);
+    LL_GPIO_SetPinPull((GPIO_TypeDef *)GPIOB_BASE, STM_LL_GPIO_PIN(PB6), LL_GPIO_PULL_NO);
+    LL_GPIO_SetPinPull((GPIO_TypeDef *)GPIOB_BASE, STM_LL_GPIO_PIN(PB7), LL_GPIO_PULL_NO);
+    LL_GPIO_SetPinPull((GPIO_TypeDef *)GPIOB_BASE, STM_LL_GPIO_PIN(PB9), LL_GPIO_PULL_NO);
+    LL_GPIO_SetPinPull((GPIO_TypeDef *)GPIOB_BASE, STM_LL_GPIO_PIN(PB10), LL_GPIO_PULL_NO);
+    LL_GPIO_SetPinPull((GPIO_TypeDef *)GPIOB_BASE, STM_LL_GPIO_PIN(PB13), LL_GPIO_PULL_NO);
+    LL_GPIO_SetPinPull((GPIO_TypeDef *)GPIOB_BASE, STM_LL_GPIO_PIN(PB14), LL_GPIO_PULL_NO);
+
+    LL_GPIO_SetPinMode((GPIO_TypeDef *)GPIOC_BASE, STM_LL_GPIO_PIN(PC0), LL_GPIO_MODE_ANALOG);
+    LL_GPIO_SetPinMode((GPIO_TypeDef *)GPIOC_BASE, STM_LL_GPIO_PIN(PC1), LL_GPIO_MODE_ANALOG);
+    LL_GPIO_SetPinPull((GPIO_TypeDef *)GPIOC_BASE, STM_LL_GPIO_PIN(PC13), LL_GPIO_PULL_NO);
+    LL_GPIO_SetPinPull((GPIO_TypeDef *)GPIOC_BASE, STM_LL_GPIO_PIN(PC14), LL_GPIO_PULL_NO);
+
+    DBGMCU->CR = 0; // Disable debug, trace and IWDG in low-power modes
+    LowPower.deepSleep(WAKEUP_TIMEOUT);
+}
 
 void Endnode::blinkAlarmCallback(void* data) //Alarm A callback for led blink
 {

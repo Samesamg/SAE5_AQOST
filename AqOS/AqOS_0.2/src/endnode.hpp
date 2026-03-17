@@ -4,29 +4,24 @@
 #include "Arduino.h"
 #include "STM32RTC.h"
 #include "STM32LoRaWAN.h"
+#include "STM32LowPower.h"
 #include "storage.hpp"
 #include "DS18B20.h"
+#include "definitions.hpp"
 
 #define TEMP_PACKET 0
 #define TEMP_BAT_PACKET 1
 #define ALARM_PACKET 2
-
-#define BAT_ADC_PIN PA10
-#define LED_PIN PB15
-#define TEMP_SENSOR_PIN PB5
-
-#define SEND_TIMEOUT 30  // 900s = 15min
-
-#define COUNTER_RESET 96  //each 24h
 
 class Endnode
 {
 public:
     bool init();
     void process();
-    void updateTempAlarms();  //TODO store in EEPROM
+    void updateTempAlarms(); 
     void updateLoraInfos();
-    Endnode(HardwareSerial &Serial1);
+    void enterDeepSleep();
+    Endnode();
 
 private:
     bool sendPacket(uint8_t packetType, uint8_t* payload);
