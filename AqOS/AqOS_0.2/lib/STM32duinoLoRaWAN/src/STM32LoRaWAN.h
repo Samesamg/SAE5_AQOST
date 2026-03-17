@@ -357,9 +357,13 @@ class STM32LoRaWAN : public Stream {
     bool setDevEui(const char *value) { return mibSetHex("DevEui", MIB_DEV_EUI, value); }
     bool setDevEui(String value) { return setDevEui(value.c_str()); }
     bool setDevEui(uint64_t value) { return mibSetUint64("DevEui", MIB_DEV_EUI, value); }
+    bool setDevEui(uint8_t* value) {return mibSetUint8Buffer("DevEui",MIB_DEV_EUI,value);}  //Added for AqOS
+
     bool setAppEui(const char *value) { return mibSetHex("AppEui", MIB_JOIN_EUI, value); }
     bool setAppEui(String value) { return setAppEui(value.c_str()); }
     bool setAppEui(uint64_t value) { return mibSetUint64("AppEui", MIB_JOIN_EUI, value); }
+    bool setAppEui(uint8_t* value) {return mibSetUint8Buffer("AppEui",MIB_JOIN_EUI,value);}  //Added for AqOS
+
     bool setDevAddr(const char *value) { return mibSetHex("DevAddr", MIB_DEV_ADDR, value); }
     bool setDevAddr(String value) { return setDevAddr(value.c_str()); }
     bool setDevAddr(uint32_t value) { return mibSetUint32("DevAddr", MIB_DEV_ADDR, value); }
@@ -378,6 +382,8 @@ class STM32LoRaWAN : public Stream {
 
     }
     bool setAppKey(String value) { return setAppKey(value.c_str()); }
+    bool setAppKey(uint8_t* value) {return mibSetUint8Buffer("AppKey",MIB_APP_KEY,value)
+                                    && (this->nwk_key_set || mibSetUint8Buffer("NwkKey", MIB_NWK_KEY, value));}  //Added for AqOS
     bool setNwkKey(const char *value)
     {
       this->nwk_key_set = true;
@@ -687,6 +693,7 @@ class STM32LoRaWAN : public Stream {
     bool mibSet(const char *name, Mib_t type, MibRequestConfirm_t &mibReq);
     bool mibSetBool(const char *name, Mib_t type, bool value);
     bool mibSetUint8(const char *name, Mib_t type, uint8_t value);
+    bool mibSetUint8Buffer(const char *name, Mib_t type, uint8_t* buf);
     bool mibSetInt8(const char *name, Mib_t type, int8_t value);
     bool mibSetUint32(const char *name, Mib_t type, uint32_t value);
     bool mibSetUint64(const char *name, Mib_t type, uint64_t value);
