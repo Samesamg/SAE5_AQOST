@@ -38,6 +38,19 @@ void setup()
       while(endnode.init());  //retry in WAKEUP_TIMEOUT
     }
   }
+
+  if (modem.available()) {
+    Serial1.print("Received packet on port ");
+    Serial1.print(modem.getDownlinkPort());
+    Serial1.print(":");
+    while (modem.available()) {
+      uint8_t b = modem.read();
+      Serial1.print(" ");
+      Serial1.print(b >> 4, HEX);
+      Serial1.print(b & 0xF, HEX);
+    }
+    Serial1.println();
+  }
 }
 
 void loop() 
