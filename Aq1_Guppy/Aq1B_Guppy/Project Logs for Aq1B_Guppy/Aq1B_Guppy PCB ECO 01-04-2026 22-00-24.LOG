@@ -1,0 +1,14 @@
+Change Component Designator: OldDesignator=+3V3 NewDesignator=TP2
+Change Component Description : Designator=BT1 Old Description=Battery Holder, THM, 2 Cell, Cell Size AAA, Plastic New Description=Battery Holder, THM, 2 Cell, Cell Size AAA, Plastic | Keystone Electronics 2468
+Added Component: Designator=J?(CONN_2082940000-SD_03_MOL)
+Add component (AddParameter): Name = "Copyright"; Value = "Copyright (C) 2025 Ultra Librarian. All rights reserved."; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Manufacturer_Name"; Value = "Molex Connector Corporation"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Manufacturer_Part_Number"; Value = "2082940030"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "RefDes"; Value = "RefDes"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Type"; Value = "Type"; VariantName = "[No Variations]"
+Added Pin To Net: NetName=+3V3 Pin=J?-1
+Added Pin To Net: NetName=sensor1_data Pin=J?-2
+Added Pin To Net: NetName=GND Pin=J?-3
+Change Net Name : Old Net Name=NetBT1_P New Net Name=Net+3V_BAT_0
+Added Member To Class: ClassName=Aq1B_Guppy Member=Component J4 FTSH-107-01-L-DV-K-A
+Added Member To Class: ClassName=Aq1B_Guppy Member=Component J? 2082940030

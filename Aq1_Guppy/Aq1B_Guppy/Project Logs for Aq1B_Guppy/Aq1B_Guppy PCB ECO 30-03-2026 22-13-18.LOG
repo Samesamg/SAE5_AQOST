@@ -1,0 +1,4 @@
+Change Component Comment : Designator=L1 Old Comment=LQM2HPN1R0MJ0L New Comment=WPN252010H1R0MT
+Add component: Footprint Not Found test_point
+Add Pin To Net: Unknown Pin: Pin TP2-0
+Add Class Member: Failed to add class member : Component TP2 test_point

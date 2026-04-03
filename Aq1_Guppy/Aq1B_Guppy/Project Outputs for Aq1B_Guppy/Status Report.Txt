@@ -1,0 +1,13 @@
+Output: Gerber X2 Files
+Type  : GerberX2
+From  : Variant [[No Variations]] of Project [Aq1B_Guppy.PrjPcb]
+   Generated File[Aq1B_Guppy_Copper_Signal_Top.gbr]
+   Generated File[Aq1B_Guppy_Copper_Signal_Bot.gbr]
+   Generated File[Aq1B_Guppy_NPTH_Drill.gbr]
+   Generated File[Aq1B_Guppy_PTH_Drill.gbr]
+
+
+Files Generated   : 4
+Documents Printed : 0
+
+Finished Output Generation At 17:46:23 On 22/03/2026

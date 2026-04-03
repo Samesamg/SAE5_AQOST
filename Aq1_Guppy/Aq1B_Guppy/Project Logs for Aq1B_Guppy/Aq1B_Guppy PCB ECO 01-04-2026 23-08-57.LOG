@@ -1,0 +1,2 @@
+Removed Pin From Net: NetName=DEBUG_PIN Pin=B1-13
+Added Pin To Net: NetName=DEBUG_PIN Pin=B1-25

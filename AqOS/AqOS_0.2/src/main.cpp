@@ -33,7 +33,7 @@ void setup()
     {
       do 
       {
-        endnode.enterDeepSleep();
+        delay(WAKEUP_TIMEOUT);
       }
       while(endnode.init());  //retry in WAKEUP_TIMEOUT
     }

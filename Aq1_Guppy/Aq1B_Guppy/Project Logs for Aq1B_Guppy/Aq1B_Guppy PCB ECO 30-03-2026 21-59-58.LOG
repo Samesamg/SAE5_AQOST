@@ -1,0 +1,59 @@
+Removed Pin From Net: NetName=+3V3 Pin=R2-2
+Removed Pin From Net: NetName=GND Pin=R3-1
+Removed Member From Class: ClassName=Aq1B_Guppy Member=R2
+Removed Member From Class: ClassName=Aq1B_Guppy Member=R3
+Change Component Footprint: Designator=L1 Old Footprint=WE-TPC_2813 New Footprint=INDC2520X120X60NL20T20
+Change Component Comment : Designator=L1 Old Comment=744029004 New Comment=LQM2HPN1R0MJ0L
+Change Managed Component Library Link : Designator=L1 Old VaultGUID=B7D15EC3-160A-466F-A46C-7801FE6295A7 New VaultGUID=0BFFF59B-3408-468B-8357-A9FCE37BBE52 Old ItemGUID=1820264D-A96C-4B59-96EA-F1C610B3C846 New ItemGUID=3ECE3842-779E-4DBE-A682-D07A46B2F859 Old RevisionGUID=8DA49133-C9FC-489C-8A15-B59512710F0C New RevisionGUID=609D9F28-B427-44F8-99DC-6C6D44877B14
+Change component parameters: Designator = "C2" ("C2"); Footprint = "CAPC2013X95X50LL10T25"; UniqueID = "\SBUHBOED" ("\SBUHBOED")
+Change component parameters (AddParameter): Name = "Capacitor Type"; Value = "Ceramic"; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "Case/Package"; Value = "0805"; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "Max Operating Temperature"; Value = "125°C"; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "Min Operating Temperature"; Value = "-55°C"; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "Mounting Technology"; Value = "SM"; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "Pins"; Value = "2"; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "Ripple Current"; Value = ""; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "Ripple Current (AC)"; Value = ""; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "RoHS Compliant"; Value = "True"; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "Tolerance"; Value = "10%"; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "Value"; Value = "10uF 10V"; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "Voltage Rating"; Value = "50V"; VariantName = "[No Variations]"
+Change component parameters: Designator = "L1" ("L1"); Footprint = "WE-TPC_2813"; UniqueID = "\GQVMGKYF" ("\GQVMGKYF")
+Change component parameters (AddParameter): Name = "Case/Package"; Value = "1008"; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "Core Material"; Value = "Ferrite"; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "Current Rating"; Value = "1.5A"; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "Datasheet URL"; Value = "http://psearch.en.murata.com/inductor/product/LQM2HPN1R0MJ0%23.pdf"; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "Datasheet Version"; Value = "Aug-16"; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "Manufacturer"; Value = "Murata"; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "Max Current Rating"; Value = ""; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "Max Operating Temperature"; Value = "85°C"; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "Min Operating Temperature"; Value = "-40°C"; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "Mounting Technology"; Value = "SM"; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "Package Description"; Value = "2-Pin Surface Mount Device, Body 2.5 x 2 mm"; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "Package Quantity"; Value = "3000"; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "Package Reference"; Value = "1008"; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "Packaging"; Value = "TapeandReel"; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "Pins"; Value = ""; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "Resistance"; Value = "0.09Ohm"; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "RoHS Compliant"; Value = "True"; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "Self Resonant Frequency"; Value = "70MHz"; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "Shielding"; Value = "Shielded"; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "Tolerance"; Value = "20%"; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "Value"; Value = "1µH"; VariantName = "[No Variations]"
+Added Component: Designator=B2(SOTFL50P160X60-6N)
+Add component (AddParameter): Name = "Datasheet Link"; Value = "https://www.ti.com/lit/ds/symlink/tps61299.pdf?ts=1731385304163"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Geometry.Height"; Value = "0.6mm"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Manufacturer_Name"; Value = "Texas Instruments"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Manufacturer_Part_Number"; Value = "TPS61299DRLR"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Mouser Part Number"; Value = "595-TPS61299DRLR"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Mouser Price/Stock"; Value = "https://www.mouser.co.uk/ProductDetail/Texas-Instruments/TPS61299DRLR?qs=IKkN%2F947nfBTwsVxPXoKBw%3D%3D"; VariantName = "[No Variations]"
+Added Pin To Net: NetName=NetC2_2 Pin=B2-1
+Added Pin To Net: NetName=NetC2_2 Pin=B2-3
+Added Pin To Net: NetName=GND Pin=B2-4
+Added Pin To Net: NetName=+3V3 Pin=B2-5
+Added Pin To Net: NetName=GND Pin=B2-6
+Change Net Name : Old Net Name=NetC2_2 New Net Name=NetB2_1
+Added Pin To Net: NetName=NetB2_2 Pin=B2-2
+Added Pin To Net: NetName=NetB2_2 Pin=L1-2
+Added Net: Name=NetB2_2
+Added Member To Class: ClassName=Aq1B_Guppy Member=Component B2 TPS61299DRLR

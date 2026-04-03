@@ -1,0 +1,7 @@
+Removed Pin From Net: NetName=LED_OUT Pin=B1-5
+Change Component Designator: OldDesignator=sensor_data NewDesignator=TP4
+Added Pin To Net: NetName=LED_OUT Pin=B1-24
+Change Net Name : Old Net Name=sensor1_data New Net Name=sensor_data
+Added Pin To Net: NetName=NetB1_26 Pin=B1-26
+Added Pin To Net: NetName=NetB1_26 Pin=R2-2
+Added Net: Name=NetB1_26
