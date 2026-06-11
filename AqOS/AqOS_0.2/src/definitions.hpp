@@ -15,8 +15,8 @@
 
 
 //TIMINGS 
-#define SEND_TIMEOUT 10  // 900s = 15min
-#define WAKEUP_TIMEOUT 5000  //ms
+#define SEND_TIMEOUT 900  // 900s = 15min
+#define WAKEUP_TIMEOUT 10000  //ms
 
 #define COUNTER_RESET 96  //Counter incrementing at each temp send => resets each 24h
 
